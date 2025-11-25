@@ -3,13 +3,13 @@ from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 
-from app.database import get_prices
-from app.strategies.ma import MovingAverageStrategy
-from app.strategies.rsi import RSIStrategy
-from app.strategies.momentum import MomentumStrategy
-from app.models_ml.trainer import ModelTrainer
-from app.backtest.backtester import Backtester
-from app.backtest.portfolio_backtester import PortfolioBacktester
+from data.database import get_prices
+from strategies.ma import MovingAverageStrategy
+from strategies.rsi import RSIStrategy
+from strategies.momentum import MomentumStrategy
+from models_ml.trainer import ModelTrainer
+from backtest.backtester import Backtester
+from backtest.portfolio_backtester import PortfolioBacktester
 
 router = APIRouter()
 

@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import pandas as pd
 
-from app.database import get_prices
-from app.backtest.backtester import Backtester
+from data.database import get_prices
+from backtest.backtester import Backtester
 
 router = APIRouter()
 

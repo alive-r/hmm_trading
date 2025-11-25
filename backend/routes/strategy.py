@@ -2,10 +2,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import pandas as pd
 
-from app.database import get_prices
-from app.strategies.ma import MovingAverageStrategy
-from app.strategies.rsi import RSIStrategy
-from app.strategies.momentum import MomentumStrategy
+from data.database import get_prices
+from strategies.ma import MovingAverageStrategy
+from strategies.rsi import RSIStrategy
+from strategies.momentum import MomentumStrategy
 
 router = APIRouter()
 

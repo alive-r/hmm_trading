@@ -1,13 +1,13 @@
 import lseg.data as ld
 import pandas as pd
 from datetime import datetime
-from app.database import init_db, store_price_data
+from database import init_db, store_price_data
 
 
 CRYPTOS = ["BTC=", "ETH=", "XRP=", "LTC=",  "BCH="]
 
 START_DATE = "2020-01-01"
-END_DATE   = "2025-11-21"
+END_DATE   = "2025-11-24"
 
 
 def start_session():

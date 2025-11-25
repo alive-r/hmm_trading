@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import pandas as pd
 
-from app.database import get_prices
-from app.models_ml.trainer import ModelTrainer
+from data.database import get_prices
+from models_ml.trainer import ModelTrainer
 
 router = APIRouter()
 
