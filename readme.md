@@ -119,32 +119,9 @@ Aggregates multiple asset backtests using user-defined weights:
 	•	Maximum drawdown
 	•	Cumulative portfolio return
 
-
-## Project Structure
-
-app/
- ├── routes/
- │    └── run_backtest.py       # Main API route
- ├── backtest/
- │    ├── backtester.py         # Single-asset engine
- │    └── portfolio_backtester.py  # Multi-asset engine
- ├── strategies/
- │    ├── ma.py
- │    ├── rsi.py
- │    └── momentum.py
- ├── models_ml/
- │    ├── trainer.py            # ML training + Walk-forward logic
- │    ├── feature_engineering.py
- │    ├── train_logistic.py
- │    ├── train_rf.py
- │    └── train_xgb.py
-frontend/
- └── (Next.js UI code)
-
-
-
-
 ## Installation
+
+Run backend and frontend at the same time
 
 Backend
 ```
@@ -159,24 +136,6 @@ Frontend
 	npm install
 	npm run dev
 ```
-
-
-## Running a Backtest
-
-Example JSON payload for /api/run-backtest:
-
-{
-  "assets": ["BTC=", "ETH="],
-  "weights": { "BTC=": 0.6, "ETH=": 0.4 },
-  "start": "2020-01-01",
-  "end": "2024-01-01",
-  "analysis_type": "model",
-  "model_type": "xgb",
-  "parameters": {
-    "window": 200,
-    "stop_loss_pct": 0.05
-  }
-}
 
 
 ## Conclusion
