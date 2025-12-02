@@ -133,11 +133,6 @@ The project supports multiple supervised learning models to predict next-day dir
 - The model is trained by minimizing logistic (cross-entropy) loss with regularization, which penalizes very large coefficients and helps reduce overfitting
 - The resulting coefficients w can be interpreted as the marginal impact of each feature on the log-odds of an upward move
 
-**Key Effects**:
-- Good baseline model: simple, interpretable, and relatively robust
-- Captures linear relationships between features and direction
-- Works best when the engineered features already capture non-linear structure (e.g., moving averages, momentum)
-
 ---
 
 #### 2. Random Forest (RF)
@@ -157,11 +152,6 @@ The project supports multiple supervised learning models to predict next-day dir
     - too shallow → underfitting
     - too deep → overfitting
 
-**Key Effects**:
-- Captures non-linear interactions between features
-- Handles noisy and heterogeneous features better than a single tree
-- Less interpretable than logistic regression but often higher predictive power in complex markets
-
 ---
 
 #### 3. XGBoost (XGB)
@@ -179,10 +169,6 @@ The project supports multiple supervised learning models to predict next-day dir
 - Learning rate (shrinkage)
 - Subsampling rates (rows/columns)
 
-**Key Effects**:
-- Very powerful for tabular financial data
-- Can capture complex non-linear structure and subtle signals
-- More prone to overfitting if not regularized or if the walk-forward scheme is not properly used
 
 ---
 
@@ -199,9 +185,9 @@ If the model supports `predict_proba` (logistic, RF, XGB), the system:
 
 ```python
 signal = 0        # neutral
-if proba > 0.55:  # high confidence up move
+if proba > 0.65:  # high confidence up move
     signal = 1    # long
-elif proba < 0.45:  # high confidence down move
+elif proba < 0.35:  # high confidence down move
     signal = -1   # short
 ```
 
@@ -237,23 +223,6 @@ For each asset:
 6. Append the (date_t, signal_t) pair to the signal series
 7. Slide the window forward and repeat
 
-This ensures:
-- At any time t, the model only sees data strictly before t
-- Every signal corresponds to a genuinely out-of-sample prediction
-- The entire date range (except the first window days) can have valid signals
-
-#### Practical Effects on Performance
-
-Compared to the earlier "single split" approach:
-- No unrealistic 600,000% returns caused by look-ahead
-- Returns typically fall into plausible ranges (e.g., −30% to +50% over 1–2 years)
-- Performance becomes sensitive to:
-  - Feature design
-  - Window length
-  - Model complexity
-  - Market regime changes
-- Provides a much more reliable estimate of real-world trading potential
-
 ---
 
 ### How the Models Translate into Trading Behavior
@@ -275,12 +244,6 @@ Once signals are generated:
   - Asset-level PnL streams (using user-defined weights)
   - Portfolio equity curve
   - Total return, Sharpe ratio, and max drawdown
-
-**In summary**:
-- Feature engineering compresses raw prices into informative signals
-- Models convert these features into probabilistic views on direction
-- Walk-forward training enforces a realistic temporal structure
-- Signal thresholds and backtesting convert model views into actual simulated trades and portfolio metrics
 
 ## Backtesting Architecture
 
