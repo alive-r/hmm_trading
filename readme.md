@@ -273,6 +273,13 @@ Aggregates multiple asset backtests using user-defined weights:
 
 Run backend and frontend at the same time.
 
+### Run Backend and Frontend at once
+```bash
+in main project folder
+npm run dev
+
+```
+
 ### Backend
 
 ```bash
@@ -280,7 +287,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload 
 ```
 
-### Frontend
+### Frontend 
 
 ```bash
 cd frontend
