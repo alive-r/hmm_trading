@@ -14,27 +14,23 @@ import type { PnlPoint } from "@/types/backtest";
 
 export default function ChartPnL({ pnlData }: { pnlData: PnlPoint[] }) {
   if (!pnlData || pnlData.length === 0) {
-    return <p className="text-gray-500">No PnL data available.</p>;
+    return <p className="text-muted">No PnL data available.</p>;
   }
 
-  // 排序
   const sorted = [...pnlData].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-
-  // 转换为 timestamp
   const transformed = sorted.map((p) => ({
     ...p,
     timestamp: new Date(p.date).getTime(),
   }));
 
-  // 判断用哪个 key（组合用 portfolio_value，单资产用 pnl）
   const key = transformed[0].portfolio_value !== undefined
     ? "portfolio_value"
     : "pnl";
 
   return (
-    <div className="border rounded-lg p-4 bg-white shadow">
+    <div className="border rounded-lg p-4 bg-background text-foreground shadow">
       <h2 className="text-xl font-semibold mb-4">
         {key === "portfolio_value" ? "Portfolio Value" : "Equity Curve"}
       </h2>

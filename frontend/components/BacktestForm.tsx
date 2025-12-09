@@ -28,8 +28,7 @@ export default function BacktestForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 🔥 验证权重
+
     const totalWeight = Object.values(form.weights).reduce((sum, w) => sum + w, 0);
     if (totalWeight === 0) {
       alert("Please set at least one asset weight > 0");
@@ -39,8 +38,6 @@ export default function BacktestForm({
       alert("Total weight cannot exceed 1.0");
       return;
     }
-
-    // 🔥 验证日期
     if (new Date(form.start) >= new Date(form.end)) {
       alert("Start date must be before end date");
       return;
@@ -70,7 +67,7 @@ export default function BacktestForm({
 
   return (
     <form
-      className="p-6 border rounded-lg space-y-6 bg-white shadow-lg"
+      className="p-6 border rounded-lg space-y-6 bg-background text-foreground shadow-lg"
       onSubmit={handleSubmit}
     >
       {/* Analysis Type Selection */}
@@ -106,7 +103,7 @@ export default function BacktestForm({
       <div className="space-y-3">
         <label className="font-semibold text-lg">Assets & Weights:</label>
         <div className="text-sm mb-2">
-          <span className={totalWeight > 1 ? "text-red-600 font-bold" : "text-gray-600"}>
+          <span className={totalWeight > 1 ? "text-red-600 font-bold" : "text-muted"}>
             Total weight: {totalWeight.toFixed(2)}
           </span>
           {remainingWeight > 0 && (
@@ -121,7 +118,7 @@ export default function BacktestForm({
           )}
         </div>
         {["BTC=", "ETH=", "XRP=", "LTC=", "BCH="].map((asset) => (
-          <div key={asset} className="flex items-center space-x-3 bg-gray-50 p-2 rounded">
+          <div key={asset} className="flex items-center space-x-3 bg-background/60 p-2 rounded">
             <input
               type="checkbox"
               checked={form.assets.includes(asset)}
@@ -141,7 +138,7 @@ export default function BacktestForm({
               step="0.01"
               min="0"
               max="1"
-              className="border p-2 rounded w-28"
+              className="border p-2 rounded w-28 bg-background text-foreground"
               value={form.weights[asset] ?? 0}
               onChange={(e) => {
                 const val = parseFloat(e.target.value);
@@ -164,7 +161,7 @@ export default function BacktestForm({
           <label className="font-semibold">Start Date:</label>
           <input
             type="date"
-            className="border p-2 rounded w-full mt-1"
+            className="border p-2 rounded w-full mt-1 bg-background text-foreground"
             value={form.start}
             onChange={(e) => setForm({ ...form, start: e.target.value })}
           />
@@ -173,7 +170,7 @@ export default function BacktestForm({
           <label className="font-semibold">End Date:</label>
           <input
             type="date"
-            className="border p-2 rounded w-full mt-1"
+            className="border p-2 rounded w-full mt-1 bg-background text-foreground"
             value={form.end}
             onChange={(e) => setForm({ ...form, end: e.target.value })}
           />
@@ -188,12 +185,10 @@ export default function BacktestForm({
           <div>
             <label className="font-semibold">Strategy Type:</label>
             <select
-              className="border p-2 rounded w-full mt-1"
+              className="border p-2 rounded w-full mt-1 bg-background text-foreground"
               value={form.strategy_type}
               onChange={(e) => {
                 const strategyType = e.target.value as "ma" | "rsi" | "momentum";
-
-                // 通用参数
                 const commonParams = {
                   stop_loss_pct: form.parameters.stop_loss_pct ?? 0.05,
                   initial_capital: form.parameters.initial_capital ?? 10000
@@ -208,7 +203,6 @@ export default function BacktestForm({
                 } else if (strategyType === "momentum") {
                   strategyParams = { window: 10 };
                 }
-
                 setForm({
                   ...form,
                   strategy_type: strategyType,
@@ -229,7 +223,7 @@ export default function BacktestForm({
                 <label className="text-sm">Short Window:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.short_window ?? 5}
                   onChange={(e) =>
                     setForm({
@@ -243,7 +237,7 @@ export default function BacktestForm({
                 <label className="text-sm">Long Window:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.long_window ?? 20}
                   onChange={(e) =>
                     setForm({
@@ -262,7 +256,7 @@ export default function BacktestForm({
                 <label className="text-sm">Window:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.window ?? 14}
                   onChange={(e) =>
                     setForm({
@@ -276,7 +270,7 @@ export default function BacktestForm({
                 <label className="text-sm">Overbought:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.overbought ?? 70}
                   onChange={(e) =>
                     setForm({
@@ -290,7 +284,7 @@ export default function BacktestForm({
                 <label className="text-sm">Oversold:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.oversold ?? 30}
                   onChange={(e) =>
                     setForm({
@@ -308,7 +302,7 @@ export default function BacktestForm({
               <label className="text-sm">Window:</label>
               <input
                 type="number"
-                className="border p-2 rounded w-full mt-1"
+                className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                 value={form.parameters.window ?? 10}
                 onChange={(e) =>
                   setForm({
@@ -327,7 +321,7 @@ export default function BacktestForm({
           <div>
             <label className="font-semibold">Model Type:</label>
             <select
-              className="border p-2 rounded w-full mt-1"
+              className="border p-2 rounded w-full mt-1 bg-background text-foreground"
               value={form.model_type}
               onChange={(e) => {
                 const modelType = e.target.value;
@@ -355,7 +349,7 @@ export default function BacktestForm({
                 <label className="text-sm">N Estimators:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.n_estimators ?? 100}
                   onChange={(e) =>
                     setForm({
@@ -369,7 +363,7 @@ export default function BacktestForm({
                 <label className="text-sm">Max Depth:</label>
                 <input
                   type="number"
-                  className="border p-2 rounded w-full mt-1"
+                  className="border p-2 rounded w-full mt-1 bg-background text-foreground"
                   value={form.parameters.max_depth ?? 5}
                   onChange={(e) =>
                     setForm({
@@ -393,7 +387,7 @@ export default function BacktestForm({
             step="0.01"
             min="0"
             max="1"
-            className="border p-2 rounded w-full mt-1"
+            className="border p-2 rounded w-full mt-1 bg-background text-foreground"
             value={form.parameters.stop_loss_pct ?? 0.05}
             onChange={(e) => {
               const val = parseFloat(e.target.value);
@@ -410,7 +404,7 @@ export default function BacktestForm({
             type="number"
             step="1000"
             min="1000"
-            className="border p-2 rounded w-full mt-1"
+            className="border p-2 rounded w-full mt-1 bg-background text-foreground"
             value={form.parameters.initial_capital ?? 10000}
             onChange={(e) => {
               const val = parseFloat(e.target.value);

@@ -21,8 +21,8 @@ export default function HomePage() {
   return (
     <main className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">Crypto Trading Backtest</h1>
-        <p className="text-gray-600 mt-2">Test your strategies with historical data</p>
+        <h1 className="text-4xl font-bold text-foreground">Crypto Trading Backtest</h1>
+        <p className="text-muted mt-2">Test your strategies with historical data</p>
       </div>
 
       <BacktestForm 
@@ -33,7 +33,7 @@ export default function HomePage() {
       {loading && (
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">Running backtest...</p>
+          <p className="mt-2 text-muted">Running backtest...</p>
         </div>
       )}
 
