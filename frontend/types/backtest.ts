@@ -45,6 +45,7 @@ export interface ParametersType {
   oversold?: number;
   
   // Model parameters
+  train_window?: number;  // number of days used as training window before Start Date
   n_estimators?: number;
   max_depth?: number;
   
