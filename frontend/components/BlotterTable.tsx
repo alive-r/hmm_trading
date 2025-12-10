@@ -19,6 +19,12 @@ type RoundTripTrade = {
   tradeLife?: number;
 };
 
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "-";
+  const tIndex = dateStr.indexOf("T");
+  return tIndex === -1 ? dateStr : dateStr.slice(0, tIndex);
+}
+
 function computeTradeLife(entryDateStr?: string, exitDateStr?: string): number | undefined {
   if (!entryDateStr || !exitDateStr) return undefined;
   const entry = new Date(entryDateStr);
@@ -122,7 +128,7 @@ export default function BlotterTable({ blotter }: { blotter: PortfolioBlotterIte
 
             return (
               <tr key={idx} className="border-b hover:bg-background">
-                <td className="p-2 text-left text-muted">{t.entryDate}</td>
+                <td className="p-2 text-left text-muted">{formatDate(t.entryDate)}</td>
                 <td className="p-2 text-left font-medium">{t.asset}</td>
                 <td className="p-2 text-left">{t.entryAction}</td>
                 <td className="p-2 text-right">{t.tradeQty.toFixed(4)}</td>
@@ -131,7 +137,7 @@ export default function BlotterTable({ blotter }: { blotter: PortfolioBlotterIte
                 </td>
                 <td className="p-2 text-right">{t.size.toFixed(4)}</td>
                 <td className="p-2 text-left text-muted text-xs">{t.entryReason ?? "-"}</td>
-                <td className="p-2 text-left text-muted">{t.exitDate ?? "-"}</td>
+                <td className="p-2 text-left text-muted">{formatDate(t.exitDate)}</td>
                 <td className="p-2 text-left">{t.exitAction ?? "-"}</td>
                 <td className="p-2 text-right">
                   {t.exitPrice !== undefined ? t.exitPrice.toFixed(2) : "-"}

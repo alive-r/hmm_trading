@@ -1,6 +1,12 @@
 import pandas as pd
 import numpy as np
 
+# Maximum lookback (in days) required by any feature in this module.
+# Upstream code should fetch at least `train_window + FEATURE_LOOKBACK_DAYS`
+# of price history before the backtest Start Date so that all indicator
+# warm-up happens before the reporting window.
+FEATURE_LOOKBACK_DAYS = 20
+
 
 def compute_rsi(series, window=14):
     delta = series.diff()
@@ -27,7 +33,8 @@ def build_features(df: pd.DataFrame):
     df["volatility"] = df["return_1d"].rolling(20).std()
     df["ma_cross"] = (df["ma5"] - df["ma20"]) / df["ma20"]
 
-    df["future_return"] = df["close"].pct_change().shift(-1)
+    # Use next day's 1-day return as the prediction target.
+    df["future_return"] = df["return_1d"].shift(-1)
     df["label"] = (df["future_return"] > 0).astype(int)
 
     df = df.replace([np.inf, -np.inf], np.nan)

@@ -90,9 +90,18 @@ export default function BacktestForm({
               type="radio"
               value="model"
               checked={form.analysis_type === "model"}
-              onChange={(e) =>
-                setForm({ ...form, analysis_type: e.target.value as "model" })
-              }
+              onChange={(e) => {
+                const commonParams = {
+                  stop_loss_pct: form.parameters.stop_loss_pct ?? 0.05,
+                  initial_capital: form.parameters.initial_capital ?? 10000,
+                  train_window: form.parameters.train_window ?? 200
+                };
+                setForm({
+                  ...form,
+                  analysis_type: e.target.value as "model",
+                  parameters: commonParams
+                });
+              }}
             />
             <span>Machine Learning Model</span>
           </label>
@@ -485,6 +494,35 @@ export default function BacktestForm({
               <option value="rf">Random Forest</option>
               <option value="xgb">XGBoost</option>
             </select>
+          </div>
+
+          <div>
+            <label className="text-sm">Training Window (days):</label>
+            <input
+              type="number"
+              className="border p-2 rounded w-full mt-1 bg-background text-foreground"
+              value={form.parameters.train_window ?? 200}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  parameters: {
+                    ...form.parameters,
+                    train_window: parseInt(e.target.value)
+                  }
+                })
+              }
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Number of days of historical data used to train the model before making each
+              daily prediction. The backtest uses data before the Start Date for training
+              and begins trading from the Start Date onward.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              If you see an error like &quot;This solver needs samples of at least 2 classes&quot;,
+              it means the training window only contained one class of returns (for example, the
+              market was always going up). In that case, try increasing the Training Window or
+              choosing an earlier Start Date so the model sees a more balanced mix of up and down days.
+            </p>
           </div>
 
           {/* Model Parameters */}

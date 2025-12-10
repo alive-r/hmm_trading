@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+from datetime import datetime
 
 from .feature_engineering import build_features
 from .train_logistic import train_logistic
@@ -72,46 +73,86 @@ class ModelTrainer:
 
         return test_df[["date", "signal"]]
     
-    def generate_walkforward_signals(self, df: pd.DataFrame, model_type="logistic", params=None, window=200):
+    def generate_walkforward_signals(
+        self,
+        df: pd.DataFrame,
+        model_type: str = "logistic",
+        params: dict | None = None,
+        window: int = 200,
+        start_date: datetime | str | None = None,
+    ) -> pd.DataFrame:
+        """
+        Walk-forward backtest:
+        - Use data before start_date as history for training windows.
+        - Start generating trading signals from start_date onward.
+        - For each date >= start_date, train on the previous `window` rows
+          (based on feature-engineered data) and predict the signal for that day.
+
+        Returns a DataFrame with ['date', 'signal'].
+        """
 
         if params is None:
             params = {}
 
-        # feature engineering
+        # 1. Feature engineering
         df_feat, features, target = build_features(df)
         if df_feat.empty:
             raise ValueError("Feature generation failed")
 
-        # sort by date
+        if "date" not in df_feat.columns:
+            raise ValueError("Feature DataFrame must contain a 'date' column.")
+
+        # 2. Ensure date is datetime and sort
+        if not pd.api.types.is_datetime64_any_dtype(df_feat["date"]):
+            df_feat["date"] = pd.to_datetime(df_feat["date"])
+
         df_feat = df_feat.sort_values("date").reset_index(drop=True)
+
+        # 3. Handle start_date: if None, use earliest available date
+        if start_date is not None:
+            if isinstance(start_date, str):
+                start_date = datetime.fromisoformat(start_date)
+        else:
+            start_date = df_feat["date"].min()
 
         all_signals = []
 
-        # walk forward analysis
-        for t in range(window, len(df_feat)):
-            train_df = df_feat.iloc[t - window : t]
-            test_df = df_feat.iloc[t : t + 1]
+        # 4. Walk-forward analysis
+        for i in range(len(df_feat)):
+            current_date = df_feat.loc[i, "date"]
+
+            # Dates before start_date are only used as history, not for prediction
+            if current_date < start_date:
+                continue
+
+            # History: all rows strictly before current_date
+            hist = df_feat[df_feat["date"] < current_date]
+
+            # Require at least `window` rows of history to train a model
+            if len(hist) < window:
+                # Not enough history for a stable model at this date, skip this day
+                continue
+
+            train_df = hist.tail(window)
 
             X_train = train_df[features]
             y_train = train_df[target]
-            X_test = test_df[features]
 
-            # train by model
+            X_test = df_feat.loc[[i], features]
+
+            # Train model for the current window
             if model_type == "logistic":
                 model = train_logistic(X_train, y_train)
-
             elif model_type == "rf":
                 n_estimators = params.get("n_estimators", 100)
                 max_depth = params.get("max_depth", 5)
                 model = train_rf(X_train, y_train, n_estimators, max_depth)
-
             elif model_type == "xgb":
                 model = train_xgb(X_train, y_train)
-
             else:
                 raise ValueError(f"Unknown model type: {model_type}")
 
-            # forecast future data
+            # Forecast and map prediction to trading signal
             try:
                 proba = model.predict_proba(X_test)[:, 1]
                 sig = 0
@@ -119,14 +160,17 @@ class ModelTrainer:
                     sig = -1
                 elif proba < 0.45:
                     sig = 1
-
             except AttributeError:
                 pred = model.predict(X_test)[0]
                 sig = 1 if pred == 1 else -1
 
             all_signals.append({
-                "date": test_df["date"].values[0],
+                "date": current_date,
                 "signal": sig
             })
+
+        # If no signals were generated, return an empty DataFrame with the right columns
+        if not all_signals:
+            return pd.DataFrame(columns=["date", "signal"])
 
         return pd.DataFrame(all_signals)

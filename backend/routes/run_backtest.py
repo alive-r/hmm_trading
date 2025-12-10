@@ -20,7 +20,7 @@ class RunBacktestRequest(BaseModel):
     weights: dict = {}
     start: str
     end: str
-    analysis_type: str   # "strategy" or "model"
+    analysis_type: str
     strategy_type: str = None
     model_type: str = None
     parameters: dict = {}
@@ -37,22 +37,19 @@ def run_backtest(req: RunBacktestRequest):
     except Exception:
         return {"error": "Invalid date format for start or end. Please use YYYY-MM-DD."}
 
-    # determine lookback window (in days) based on analysis type and parameters
     lookback_days = 0
     if req.analysis_type == "strategy":
-        # default values in case parameters are missing
         if req.strategy_type == "ma":
             short_w = int(req.parameters.get("short_window", 5))
             long_w = int(req.parameters.get("long_window", 20))
             lookback_days = max(short_w, long_w)
         elif req.strategy_type in ("rsi", "momentum"):
-            # both RSI and Momentum use a single window length
             lookback_days = int(req.parameters.get("window", 14))
     elif req.analysis_type == "model":
-        # training window for walk-forward analysis
-        lookback_days = int(req.parameters.get("window", 200))
+        train_window = int(req.parameters.get("train_window", 200))
+        feature_lookback = 20
+        lookback_days = train_window + feature_lookback
 
-    # compute earliest date we need prices for (may be before the user-selected start)
     if lookback_days > 0:
         data_start_dt = start_dt - timedelta(days=lookback_days)
     else:
@@ -127,30 +124,26 @@ def run_backtest(req: RunBacktestRequest):
         trainer = ModelTrainer()
         model_params = {
             k: v for k, v in req.parameters.items() 
-            if k not in ["stop_loss_pct", "initial_capital"]
+            if k not in ["stop_loss_pct", "initial_capital", "train_window"]
         }
 
         for asset, df in price_data_dict.items():
             try:
-                # 训练模型
-                # train_result = trainer.train(df, req.model_type, model_params)
-                # model = train_result["model"]
-                # features = train_result["features"]
-                # test_index = train_result["test_index"]
-
-                # # 生成信号
-                # signals = trainer.generate_signals(df, model, features, test_index)
-                # signals_dict[asset] = signals
+                # Use walk-forward analysis:
+                # - use data before start_dt as history for training windows
+                # - start generating trading signals from start_dt onward
+                train_window = int(req.parameters.get("train_window", 200))
 
                 signals = trainer.generate_walkforward_signals(
                     df,
                     model_type=req.model_type,
                     params=model_params,
-                    window=req.parameters.get("window", 200) 
+                    window=train_window,
+                    start_date=start_dt,
                 )
 
                 signals_dict[asset] = signals
-                                
+
             except Exception as e:
                 return {"error": f"Model training failed for {asset}: {str(e)}"}
     else:
