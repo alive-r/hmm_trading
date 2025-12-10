@@ -285,7 +285,7 @@ export default function BacktestForm({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Number of days for the fast moving average (reacts quickly to price
-                    changes).
+                    changes). Default is 5 days, a short horizon for recent price moves.
                   </p>
                 </div>
                 <div>
@@ -303,6 +303,7 @@ export default function BacktestForm({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Number of days for the slow moving average (defines the overall trend).
+                    Default is 20 days, a common choice for a slower trend signal.
                   </p>
                 </div>
               </div>
@@ -351,6 +352,7 @@ export default function BacktestForm({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Number of days used to calculate the RSI (lookback period).
+                    Default is 14 days, the classic RSI setting in technical analysis.
                   </p>
                 </div>
                 <div>
@@ -368,6 +370,7 @@ export default function BacktestForm({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Above this level the RSI indicates strong upward momentum (overbought zone).
+                    Default is 70, a standard threshold to mark strong upside moves.
                   </p>
                 </div>
                 <div>
@@ -385,6 +388,7 @@ export default function BacktestForm({
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Below this level the RSI indicates strong downward momentum (oversold zone).
+                    Default is 30, a standard threshold to mark strong downside moves.
                   </p>
                 </div>
               </div>
@@ -432,6 +436,7 @@ export default function BacktestForm({
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Number of days between today's price and the past price used to compute momentum.
+                  Default is 10 days, a short-term horizon to capture recent trends.
                 </p>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -495,7 +500,42 @@ export default function BacktestForm({
               <option value="xgb">XGBoost</option>
             </select>
           </div>
-
+          <div className="mt-2 text-xs text-muted-foreground space-y-1">
+            {form.model_type === "logistic" && (
+              <p>
+                Logistic Regression: a simple linear model that combines the engineered
+                features (moving averages, returns, volatility, etc.) to estimate the
+                probability that tomorrow&apos;s return is positive. In this demo, we use
+                two probability cutoffs: above 0.65 the model sets a long signal (+1),
+                below 0.45 it sets a short signal (-1), and in between it stays flat.
+                These values are chosen to avoid trading when the model is uncertain.
+                Logistic Regression is more interpretable but may miss complex non-linear
+                patterns.
+              </p>
+            )}
+            {form.model_type === "rf" && (
+              <p>
+                Random Forest: an ensemble of many decision trees that each learn
+                different rules based on past features and returns. The forest averages
+                the predictions from all trees to estimate the chance of an up or down
+                day. By default we use 100 trees and max depth 5, a small forest that
+                can capture non-linear patterns but still limits overfitting in this
+                demo. As with Logistic Regression, the predicted direction is converted
+                into daily long/short trading signals for the backtest.
+              </p>
+            )}
+            {form.model_type === "xgb" && (
+              <p>
+                XGBoost: a gradient-boosted tree model that builds trees one by one,
+                focusing on the mistakes of previous trees. It is often strong on complex
+                patterns and regime changes. In this demo it uses the same engineered
+                features as the other models and a simple set of default hyperparameters
+                (no heavy tuning), and outputs a prediction of next-day direction, which
+                is then turned into long (+1) or short (-1) trading signals in the
+                portfolio backtest.
+              </p>
+            )}
+          </div>
           <div>
             <label className="text-sm">Training Window (days):</label>
             <input
@@ -515,13 +555,24 @@ export default function BacktestForm({
             <p className="text-xs text-muted-foreground mt-1">
               Number of days of historical data used to train the model before making each
               daily prediction. The backtest uses data before the Start Date for training
-              and begins trading from the Start Date onward.
+              and begins trading from the Start Date onward. The default is 200 days, a
+              compromise between having enough history and allowing the model to adapt to
+              new market regimes.
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               If you see an error like &quot;This solver needs samples of at least 2 classes&quot;,
               it means the training window only contained one class of returns (for example, the
               market was always going up). In that case, try increasing the Training Window or
               choosing an earlier Start Date so the model sees a more balanced mix of up and down days.
+            </p>
+          </div>
+
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p className="font-semibold">Feature engineering (for all models):</p>
+            <p>
+              Before training, the app builds features from past prices such as daily returns,
+              a fast MA (5 days), a slower MA (20 days), 10-day momentum, 20-day volatility
+              and an RSI-style indicator with a 14-day window. 
             </p>
           </div>
 
