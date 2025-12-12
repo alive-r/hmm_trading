@@ -11,8 +11,12 @@ export interface RunBacktestRequest {
   parameters: ParametersType;
 }
 
+// Use an environment variable in production, fall back to localhost for local dev.
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
 export async function runBacktest(req: RunBacktestRequest) {
-  const response = await fetch("http://localhost:8000/api/run-backtest", {
+  const response = await fetch(`${API_BASE_URL}/api/run-backtest`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -21,7 +25,10 @@ export async function runBacktest(req: RunBacktestRequest) {
   });
 
   if (!response.ok) {
-    throw new Error("Backtest API failed");
+    const text = await response.text();
+    throw new Error(
+      `Backtest API failed (${response.status}): ${text || "no response body"}`
+    );
   }
 
   return response.json();
